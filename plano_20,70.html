@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabéns pela sua compra!</title>
+    <style>
+        :root {
+            --primary-color: #ff6b81;
+            --secondary-color: #8e44ad;
+            --background-color: #1a1a2e;
+            --text-color: #f0f0f0;
+            --accent-color: #ff9a8b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            border: 2px solid var(--primary-color);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+        
+        .error-message {
+            color: #ff4757;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #ff4757;
+            border-radius: 10px;
+            display: none; /* Starts hidden */
+        }
+        
+        .success-message {
+            color: #2ed573;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #2ed573;
+            border-radius: 10px;
+            display: none; /* Starts hidden */
+        }
+        
+        .loading {
+            display: block; /* Starts visible */
+            margin: 20px auto;
+        }
+        
+        .loading:after {
+            content: " ";
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 8px auto;
+            border-radius: 50%;
+            border: 6px solid var(--primary-color);
+            border-color: var(--primary-color) transparent var(--primary-color) transparent;
+            animation: loading 1.2s linear infinite;
+        }
+        
+        @keyframes loading {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+    <!-- Facebook Pixel Code -->
+        <script>
+        // Extrair código da URL
+        function obterParametroURL(nome) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(nome);
+        }
+
+        // Função para obter todos os parâmetros UTM e fbclid
+        function obterParametrosRastreamento() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                utm_source: urlParams.get('utm_source') || '',
+                utm_medium: urlParams.get('utm_medium') || '',
+                utm_campaign: urlParams.get('utm_campaign') || '',
+                utm_content: urlParams.get('utm_content') || '',
+                utm_term: urlParams.get('utm_term') || '',
+                fbclid: urlParams.get('fbclid') || ''
+            };
+        }
+
+        // Função para validar o código
+        async function validarCodigo(codigo) {
+            try {
+                // URL do backend no Google Apps Script (ATUALIZADA)
+                const backendUrl = 'https://script.google.com/macros/s/AKfycbwOnrVXhEk-6cOfXtF9JkueFzsFwORdrM9jZfEaMGe96brngHiDYgLMJE3xsqnnat5Lhg/exec?codigo=' + codigo;
+                
+                const response = await fetch(backendUrl);
+                // Verifica se a resposta foi bem sucedida (status 200-299)
+                if (!response.ok) {
+                    // Tenta ler o corpo do erro se possível
+                    let errorBody = 'Erro desconhecido na resposta do servidor.';
+                    try {
+                        errorBody = await response.text();
+                    } catch (e) { /* Ignora se não conseguir ler o corpo */ }
+                    throw new Error(`Erro HTTP ${response.status}: ${errorBody}`);
+                }
+                
+                const data = await response.json();
+                return data;
+
+            } catch (error) {
+                console.error('Erro ao validar código:', error);
+                // Retorna um objeto de erro padronizado
+                return { status: false, message: `Erro ao conectar com o servidor de validação. (${error.message})` };
+            }
+        }
+
+        // Função principal
+        async function iniciar() {
+            // Elementos da página
+            const loadingDiv = document.getElementById('loading');
+            const contentDiv = document.getElementById('content');
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            // Mostrar loading inicialmente
+            loadingDiv.style.display = 'block';
+            contentDiv.classList.add('hidden');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Obter código da URL
+            const codigo = obterParametroURL('codigo');
+            
+            // Log dos parâmetros capturados para debugging
+            const tracking = obterParametrosRastreamento();
+            console.log('📊 Parâmetros de rastreamento capturados:', tracking);
+            console.log('🔍 Tem dados de rastreamento:', !!(tracking.utm_source || tracking.fbclid));
+            
+            // Se não houver código, mostrar erro
+            if (!codigo) {
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Código não fornecido na URL. Por favor, use o link correto.';
+                return;
+            }
+            
+            // Verificar se já processamos este código (evita múltiplas validações)
+            const codigoProcessado = sessionStorage.getItem(`codigo_${codigo}`);
+            if (codigoProcessado) {
+                const dadosProcessados = JSON.parse(codigoProcessado);
+                loadingDiv.style.display = 'none';
+                
+                if (dadosProcessados.status) {
+                    contentDiv.classList.remove('hidden');
+                    successDiv.style.display = 'block';
+                    console.log('⚠️ Código já processado anteriormente - Pixel NÃO disparado novamente');
+                } else {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = dadosProcessados.message;
+                }
+                return;
+            }
+            
+            // Validar código com o backend
+            const resultado = await validarCodigo(codigo);
+            
+            // Esconder loading
+            loadingDiv.style.display = 'none';
+            
+            // Valor para o pixel - Plano 20.70
+            const valor = 20.70;
+            
+            if (resultado.status === true) {
+                // Código válido
+                contentDiv.classList.remove('hidden');
+                successDiv.style.display = 'block';
+                
+                // Salvar resultado no sessionStorage para evitar reprocessamento
+                sessionStorage.setItem(`codigo_${codigo}`, JSON.stringify({
+                    status: true,
+                    timestamp: new Date().toISOString()
+                }));
+                
+                // Disparar evento de compra no Facebook Pixel
+                try {
+                    if (typeof fbq === 'function') {
+                        // Monta objeto do evento
+                        const purchaseData = {
+                            value: parseFloat(valor),
+                            currency: 'BRL',
+                            content_ids: [codigo], // Usar o código como ID do conteúdo
+                            content_type: 'product',
+                            content_name: 'VIP + 6 BONUS (10% OFF)'
+                        };
+
+                        // Adiciona UTMs se existirem
+                        if (tracking.utm_source) purchaseData.utm_source = tracking.utm_source;
+                        if (tracking.utm_medium) purchaseData.utm_medium = tracking.utm_medium;
+                        if (tracking.utm_campaign) purchaseData.utm_campaign = tracking.utm_campaign;
+                        if (tracking.utm_content) purchaseData.utm_content = tracking.utm_content;
+                        if (tracking.utm_term) purchaseData.utm_term = tracking.utm_term;
+
+                        // Adiciona fbclid se existir (formatado como fbc)
+                        if (tracking.fbclid) {
+                            purchaseData.fbc = `fb.1.${Date.now()}.${tracking.fbclid}`;
+                        }
+
+                        // Custom data para análise
+                        purchaseData.custom_data = {
+                            origem: 'pagina_obrigado',
+                            timestamp: new Date().toISOString(),
+                            has_tracking: !!(tracking.utm_source || tracking.fbclid),
+                            plano: 'VIP + 6 BONUS (10% OFF)'
+                        };
+
+                        fbq('track', 'Purchase', purchaseData);
+                        
+                        console.log('✅ Evento Purchase disparado com rastreamento:', purchaseData);
+                    } else {
+                        console.warn('Função fbq do Facebook Pixel não encontrada.');
+                    }
+                } catch (pixelError) {
+                    console.error('Erro ao disparar o pixel do Facebook:', pixelError);
+                }
+
+            } else {
+                // Código inválido ou erro
+                errorDiv.style.display = 'block';
+                // Usa a mensagem retornada pelo backend ou uma padrão
+                errorDiv.textContent = resultado.message || 'Ocorreu um erro ao validar seu código. Tente novamente ou contate o suporte.';
+                
+                // Salvar resultado de erro no sessionStorage
+                sessionStorage.setItem(`codigo_${codigo}`, JSON.stringify({
+                    status: false,
+                    message: resultado.message,
+                    timestamp: new Date().toISOString()
+                }));
+            }
+        }
+        
+        // Iniciar quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', iniciar);
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=626531453770175&ev=PageView&noscript=1"/>
+    </noscript>
+    <!-- End Facebook Pixel Code -->
+</head>
+<body>
+    <div class="container">
+        <h1>Parabéns pela sua compra!</h1>
+        
+        <div id="loading" class="loading">
+             <p style="font-size: 1rem; margin-top: 10px;">Verificando seu acesso...</p> <!-- Added loading text -->
+        </div>
+        
+        <div id="content" class="hidden">
+            <p>Seu acesso foi confirmado com sucesso! Estamos muito felizes em ter você conosco.</p>
+            <p>Clique no botão abaixo para acessar o conteúdo exclusivo que você acabou de adquirir.</p>
+            
+            <a href="https://t.me/+0HLrspX1rRI5OTBh" class="btn" id="accessButton">ACESSE AS FAMOSAS AQUI</a>
+        </div>
+        
+        <div id="errorMessage" class="error-message">
+            <!-- Message will be set by JavaScript -->
+        </div>
+        
+        <div id="successMessage" class="success-message">
+            Compra confirmada! Seu acesso foi liberado.
+        </div>
+        
+        <p class="footer">Em caso de dúvidas, entre em contato com nosso suporte.</p>
+    </div>
+
+        <script>
+        // Extrair código da URL
+        function obterParametroURL(nome) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(nome);
+        }
+
+        // Função para obter todos os parâmetros UTM e fbclid
+        function obterParametrosRastreamento() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                utm_source: urlParams.get('utm_source') || '',
+                utm_medium: urlParams.get('utm_medium') || '',
+                utm_campaign: urlParams.get('utm_campaign') || '',
+                utm_content: urlParams.get('utm_content') || '',
+                utm_term: urlParams.get('utm_term') || '',
+                fbclid: urlParams.get('fbclid') || ''
+            };
+        }
+
+        // Função para validar o código
+        async function validarCodigo(codigo) {
+            try {
+                // URL do backend no Google Apps Script (ATUALIZADA)
+                const backendUrl = 'https://script.google.com/macros/s/AKfycbwOnrVXhEk-6cOfXtF9JkueFzsFwORdrM9jZfEaMGe96brngHiDYgLMJE3xsqnnat5Lhg/exec?codigo=' + codigo;
+                
+                const response = await fetch(backendUrl);
+                // Verifica se a resposta foi bem sucedida (status 200-299)
+                if (!response.ok) {
+                    // Tenta ler o corpo do erro se possível
+                    let errorBody = 'Erro desconhecido na resposta do servidor.';
+                    try {
+                        errorBody = await response.text();
+                    } catch (e) { /* Ignora se não conseguir ler o corpo */ }
+                    throw new Error(`Erro HTTP ${response.status}: ${errorBody}`);
+                }
+                
+                const data = await response.json();
+                return data;
+
+            } catch (error) {
+                console.error('Erro ao validar código:', error);
+                // Retorna um objeto de erro padronizado
+                return { status: false, message: `Erro ao conectar com o servidor de validação. (${error.message})` };
+            }
+        }
+
+        // Função principal
+        async function iniciar() {
+            // Elementos da página
+            const loadingDiv = document.getElementById('loading');
+            const contentDiv = document.getElementById('content');
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            // Mostrar loading inicialmente
+            loadingDiv.style.display = 'block';
+            contentDiv.classList.add('hidden');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Obter código da URL
+            const codigo = obterParametroURL('codigo');
+            
+            // Log dos parâmetros capturados para debugging
+            const tracking = obterParametrosRastreamento();
+            console.log('📊 Parâmetros de rastreamento capturados:', tracking);
+            console.log('🔍 Tem dados de rastreamento:', !!(tracking.utm_source || tracking.fbclid));
+            
+            // Se não houver código, mostrar erro
+            if (!codigo) {
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Código não fornecido na URL. Por favor, use o link correto.';
+                return;
+            }
+            
+            // Verificar se já processamos este código (evita múltiplas validações)
+            const codigoProcessado = sessionStorage.getItem(`codigo_${codigo}`);
+            if (codigoProcessado) {
+                const dadosProcessados = JSON.parse(codigoProcessado);
+                loadingDiv.style.display = 'none';
+                
+                if (dadosProcessados.status) {
+                    contentDiv.classList.remove('hidden');
+                    successDiv.style.display = 'block';
+                    console.log('⚠️ Código já processado anteriormente - Pixel NÃO disparado novamente');
+                } else {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = dadosProcessados.message;
+                }
+                return;
+            }
+            
+            // Validar código com o backend
+            const resultado = await validarCodigo(codigo);
+            
+            // Esconder loading
+            loadingDiv.style.display = 'none';
+            
+            // Valor para o pixel - Plano 20.70
+            const valor = 20.70;
+            
+            if (resultado.status === true) {
+                // Código válido
+                contentDiv.classList.remove('hidden');
+                successDiv.style.display = 'block';
+                
+                // Salvar resultado no sessionStorage para evitar reprocessamento
+                sessionStorage.setItem(`codigo_${codigo}`, JSON.stringify({
+                    status: true,
+                    timestamp: new Date().toISOString()
+                }));
+                
+                // Disparar evento de compra no Facebook Pixel
+                try {
+                    if (typeof fbq === 'function') {
+                        // Monta objeto do evento
+                        const purchaseData = {
+                            value: parseFloat(valor),
+                            currency: 'BRL',
+                            content_ids: [codigo], // Usar o código como ID do conteúdo
+                            content_type: 'product',
+                            content_name: 'VIP + 6 BONUS (10% OFF)'
+                        };
+
+                        // Adiciona UTMs se existirem
+                        if (tracking.utm_source) purchaseData.utm_source = tracking.utm_source;
+                        if (tracking.utm_medium) purchaseData.utm_medium = tracking.utm_medium;
+                        if (tracking.utm_campaign) purchaseData.utm_campaign = tracking.utm_campaign;
+                        if (tracking.utm_content) purchaseData.utm_content = tracking.utm_content;
+                        if (tracking.utm_term) purchaseData.utm_term = tracking.utm_term;
+
+                        // Adiciona fbclid se existir (formatado como fbc)
+                        if (tracking.fbclid) {
+                            purchaseData.fbc = `fb.1.${Date.now()}.${tracking.fbclid}`;
+                        }
+
+                        // Custom data para análise
+                        purchaseData.custom_data = {
+                            origem: 'pagina_obrigado',
+                            timestamp: new Date().toISOString(),
+                            has_tracking: !!(tracking.utm_source || tracking.fbclid),
+                            plano: 'VIP + 6 BONUS (10% OFF)'
+                        };
+
+                        fbq('track', 'Purchase', purchaseData);
+                        
+                        console.log('✅ Evento Purchase disparado com rastreamento:', purchaseData);
+                    } else {
+                        console.warn('Função fbq do Facebook Pixel não encontrada.');
+                    }
+                } catch (pixelError) {
+                    console.error('Erro ao disparar o pixel do Facebook:', pixelError);
+                }
+
+            } else {
+                // Código inválido ou erro
+                errorDiv.style.display = 'block';
+                // Usa a mensagem retornada pelo backend ou uma padrão
+                errorDiv.textContent = resultado.message || 'Ocorreu um erro ao validar seu código. Tente novamente ou contate o suporte.';
+                
+                // Salvar resultado de erro no sessionStorage
+                sessionStorage.setItem(`codigo_${codigo}`, JSON.stringify({
+                    status: false,
+                    message: resultado.message,
+                    timestamp: new Date().toISOString()
+                }));
+            }
+        }
+        
+        // Iniciar quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', iniciar);
+    </script>
+</body>
+</html>
